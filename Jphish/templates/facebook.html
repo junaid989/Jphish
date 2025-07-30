@@ -1,67 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
+<html lang="en"><head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Facebook Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
-    body {
-      background-color: #e9ebee;
-      font-family: Arial, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-    .login-box {
-      background: white;
-      padding: 30px;
-      width: 320px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    .login-box h2 {
-      font-family: 'Segoe UI', sans-serif;
-      color: #1877f2;
-      margin-bottom: 20px;
-    }
-    .login-box input {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    .login-box button {
-      width: 100%;
-      padding: 12px;
-      background-color: #1877f2;
-      color: white;
-      border: none;
-      font-weight: bold;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .login-box .link {
-      margin-top: 15px;
-      font-size: 14px;
-    }
-    .login-box .link a {
-      color: #1877f2;
-      text-decoration: none;
-    }
+    body { display:flex;align-items:center;justify-content:center;height:100vh;
+      background:#e9ebee;margin:0;font:14px/1.5 Arial,sans-serif; }
+    .login-box { width:340px;padding:40px;text-align:center;
+      background:#fff;border-radius:8px;box-shadow:0 0 8px rgba(0,0,0,0.1); }
+    .logo { width:120px;margin:0 auto 20px; }
+    .logo img { width:100%; }
+    input { width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:4px; }
+    .btn { width:100%;padding:12px;margin-top:12px;
+      background:#4267B2;color:#fff;border:none;font-weight:bold;border-radius:4px;cursor:pointer; }
+    .link { font-size:13px;color:#1877f2;margin-top:14px; }
+    .link a { color:#1877f2;text-decoration:none; }
   </style>
-</head>
-<body>
+</head><body>
   <div class="login-box">
-    <h2>Facebook</h2>
-    <input type="text" placeholder="Email or phone number" />
-    <input type="password" placeholder="Password" />
-    <button>Log In</button>
-    <div class="link">
-      <a href="#">Forgotten password?</a>
-    </div>
+    <div class="logo"><img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook logo"/></div>
+    <input type="text" placeholder="Email or phone number">
+    <input type="password" placeholder="Password">
+    <button class="btn">Log In</button>
+    <div class="link"><a href="#">Forgotten password?</a></div>
   </div>
-</body>
-</html>
+</body></html>
